@@ -20,19 +20,28 @@ const (
 func parseTraining(data string) (int, string, time.Duration, error) {
 	parts := strings.Split(data, ",")
 	if len(parts) != 3 {
-		return 0, "", 0, fmt.Errorf("неверный формат данных: ожидается три элемента, получено %d", len(parts))
+		return 0, "", 0, fmt.Errorf("invalid data format: expected 3 elements, got %d", len(parts))
 	}
 
 	steps, err := strconv.Atoi(parts[0])
 	if err != nil {
-		return 0, "", 0, fmt.Errorf("ошибка преобразования количества шагов: %v", err)
+		return 0, "", 0, fmt.Errorf("failed to parse steps count: %w", err)
+	}
+	if steps <= 0 {
+		return 0, "", 0, fmt.Errorf("steps count must be greater than 0, got %d", steps)
 	}
 
 	activityType := parts[1]
+	if activityType == "" {
+		return 0, "", 0, fmt.Errorf("activity type cannot be empty")
+	}
 
 	duration, err := time.ParseDuration(parts[2])
 	if err != nil {
-		return 0, "", 0, fmt.Errorf("ошибка парсинга продолжительности: %v", err)
+		return 0, "", 0, fmt.Errorf("failed to parse duration: %w", err)
+	}
+	if duration <= 0 {
+		return 0, "", 0, fmt.Errorf("duration must be greater than 0, got %v", duration)
 	}
 
 	return steps, activityType, duration, nil
@@ -65,8 +74,25 @@ func meanSpeed(steps int, height float64, duration time.Duration) float64 {
 }
 
 func RunningSpentCalories(steps int, weight, height float64, duration time.Duration) (float64, error) {
-	if steps <= 0 || weight <= 0 || height <= 0 || duration <= 0 {
-		return 0, fmt.Errorf("некорректные входные параметры")
+
+	if steps <= 0 {
+		log.Printf("Invalid steps value: %d. Steps must be greater than 0", steps)
+		return 0, fmt.Errorf("steps must be greater than 0, got %d", steps)
+	}
+
+	if weight <= 0 {
+		log.Printf("Invalid weight value: %.2f. Weight must be greater than 0", weight)
+		return 0, fmt.Errorf("weight must be greater than 0, got %.2f", weight)
+	}
+
+	if height <= 0 {
+		log.Printf("Invalid height value: %.2f. Height must be greater than 0", height)
+		return 0, fmt.Errorf("height must be greater than 0, got %.2f", height)
+	}
+
+	if duration <= 0 {
+		log.Printf("Invalid duration value: %v. Duration must be greater than 0", duration)
+		return 0, fmt.Errorf("duration must be greater than 0, got %v", duration)
 	}
 
 	speed := meanSpeed(steps, height, duration)
@@ -77,8 +103,25 @@ func RunningSpentCalories(steps int, weight, height float64, duration time.Durat
 }
 
 func WalkingSpentCalories(steps int, weight, height float64, duration time.Duration) (float64, error) {
-	if steps <= 0 || weight <= 0 || height <= 0 || duration <= 0 {
-		return 0, fmt.Errorf("некорректные входные параметры")
+
+	if steps <= 0 {
+		log.Printf("Invalid steps value: %d. Steps must be greater than 0", steps)
+		return 0, fmt.Errorf("steps must be greater than 0, got %d", steps)
+	}
+
+	if weight <= 0 {
+		log.Printf("Invalid weight value: %.2f. Weight must be greater than 0", weight)
+		return 0, fmt.Errorf("weight must be greater than 0, got %.2f", weight)
+	}
+
+	if height <= 0 {
+		log.Printf("Invalid height value: %.2f. Height must be greater than 0", height)
+		return 0, fmt.Errorf("height must be greater than 0, got %.2f", height)
+	}
+
+	if duration <= 0 {
+		log.Printf("Invalid duration value: %v. Duration must be greater than 0", duration)
+		return 0, fmt.Errorf("duration must be greater than 0, got %v", duration)
 	}
 
 	speed := meanSpeed(steps, height, duration)
@@ -119,7 +162,7 @@ func TrainingInfo(data string, weight, height float64) (string, error) {
 	durationHours := duration.Hours()
 
 	result := fmt.Sprintf(
-		"Тип тренировки: %s\nДлительность: %.2f ч.\nДистанция: %.2f км.\nСкорость: %.2f км/ч\nСожгли калорий: %.2f",
+		"Тип тренировки: %s\nДлительность: %.2f ч.\nДистанция: %.2f км.\nСкорость: %.2f км/ч\nСожгли калорий: %.2f\n",
 		activityType, durationHours, distKm, speed, calories,
 	)
 	return result, nil
